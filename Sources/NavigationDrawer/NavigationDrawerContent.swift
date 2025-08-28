@@ -19,10 +19,6 @@ struct NavigationDrawerContent<Content: View, Drawer: View>: View {
 
     @State private var dragState = DragState()
 
-    // TODO: support right to left
-    var drawerOffset: CGFloat { (isOpen ? 0 : -drawerWidth) + dragState.delta }
-    var contentOffset: CGFloat { (isOpen ? drawerWidth : 0) + dragState.delta }
-
     var body: some View {
         ZStack(alignment: .leading) {
             drawer()
@@ -36,6 +32,16 @@ struct NavigationDrawerContent<Content: View, Drawer: View>: View {
         .gesture(swipeGesture)
     }
 
+    var drawerOffset: CGFloat {
+        let rawOffset = (isOpen ? 0 : -drawerWidth) + dragState.delta
+        return max(-drawerWidth, min(rawOffset, 0))
+    }
+
+    var contentOffset: CGFloat {
+        let rawOffset = (isOpen ? drawerWidth : 0) + dragState.delta
+        return max(0, min(rawOffset, drawerWidth))
+    }
+
     var swipeGesture: some Gesture {
         DragGesture(minimumDistance: 8)
             .onChanged { value in
@@ -43,7 +49,6 @@ struct NavigationDrawerContent<Content: View, Drawer: View>: View {
 
                 guard dragState.isDragging else { return }
 
-                // TODO: different clamping behaviours (clip, rubber band)
                 dragState.delta = value.translation.width
 
                 if layoutDirection == .rightToLeft {
