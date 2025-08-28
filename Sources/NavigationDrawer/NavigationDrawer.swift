@@ -35,6 +35,7 @@ public struct NavigationDrawer<Content: View, Drawer: View>: View {
 
 #Preview {
     @Previewable @State var isDrawerOpen = false
+    @Previewable @State var layoutDirection: LayoutDirection = .leftToRight
 
     NavigationDrawer(
         isOpen: $isDrawerOpen,
@@ -52,25 +53,36 @@ public struct NavigationDrawer<Content: View, Drawer: View>: View {
             )
     } content: {
         NavigationStack {
-            Text("Content")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(
-                    LinearGradient(
-                        colors: [.teal, .gray,],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .opacity(0.75)
+            VStack {
+                Text("Content")
+                    .font(.title)
+
+                Toggle("Layout direction", isOn: .init(
+                    get: { layoutDirection == .rightToLeft },
+                    set: { layoutDirection = $0 ? .rightToLeft : .leftToRight }
+                ))
+                .fixedSize()
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(
+                LinearGradient(
+                    colors: [.teal, .gray,],
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button {
-                            isDrawerOpen.toggle()
-                        } label: {
-                            Image(systemName: "line.3.horizontal")
-                        }
+                .opacity(0.75)
+            )
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        isDrawerOpen.toggle()
+                    } label: {
+                        Image(systemName: "line.3.horizontal")
                     }
                 }
+            }
         }
     }
+    .environment(\.layoutDirection, layoutDirection)
 }
