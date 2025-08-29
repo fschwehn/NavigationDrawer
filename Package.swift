@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "NavigationDrawer",
     platforms: [
-        .iOS(.v18),
+        .iOS(.v26),
     ],
     products: [
         .library(

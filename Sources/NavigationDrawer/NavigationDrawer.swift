@@ -33,15 +33,10 @@ public struct NavigationDrawer<Content: View, Drawer: View>: View {
     }
 }
 
-#Preview {
-    @Previewable @State var isDrawerOpen = false
-    @Previewable @State var layoutDirection: LayoutDirection = .leftToRight
-
-    NavigationDrawer(
-        isOpen: $isDrawerOpen,
-        drawerWidth: .fixed(320)
-    ) {
+private struct DemoDrawer: View {
+    var body: some View {
         Text("Drawer")
+            .font(.title)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
                 LinearGradient(
@@ -51,19 +46,18 @@ public struct NavigationDrawer<Content: View, Drawer: View>: View {
                 )
                 .opacity(0.75)
             )
-    } content: {
+    }
+}
+
+private struct DemoContent: View {
+    @Binding var isDrawerOpen: Bool
+
+    var body: some View {
         NavigationStack {
             VStack {
                 Text("Content")
                     .font(.title)
-
-                Toggle("Layout direction", isOn: .init(
-                    get: { layoutDirection == .rightToLeft },
-                    set: { layoutDirection = $0 ? .rightToLeft : .leftToRight }
-                ))
-                .fixedSize()
             }
-            .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
                 LinearGradient(
@@ -84,5 +78,44 @@ public struct NavigationDrawer<Content: View, Drawer: View>: View {
             }
         }
     }
-    .environment(\.layoutDirection, layoutDirection)
+}
+
+
+#Preview("auto") {
+    @Previewable @State var isDrawerOpen = false
+
+    NavigationDrawer(
+        isOpen: $isDrawerOpen,
+        drawerWidth: .fixed(320),
+        drawer: { DemoDrawer() },
+        content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
+    )
+    .task {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(2))
+            isDrawerOpen.toggle()
+        }
+    }
+}
+
+#Preview("portait open", traits: .portrait) {
+    @Previewable @State var isDrawerOpen = true
+
+    NavigationDrawer(
+        isOpen: $isDrawerOpen,
+        drawerWidth: .fixed(320),
+        drawer: { DemoDrawer() },
+        content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
+    )
+}
+
+#Preview("landscape open", traits: .landscapeLeft) {
+    @Previewable @State var isDrawerOpen = true
+
+    NavigationDrawer(
+        isOpen: $isDrawerOpen,
+        drawerWidth: .fixed(320),
+        drawer: { DemoDrawer() },
+        content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
+    )
 }
