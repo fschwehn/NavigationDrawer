@@ -27,19 +27,43 @@ struct NavigationDrawerContent<Content: View, Drawer: View>: View {
             content()
                 .offset(x: contentOffset)
         }
-        .animation(.snappy, value: [isOpen, dragState.isDragging])
+        .animation(
+            .interpolatingSpring(duration: 0.36, bounce: 0.15, initialVelocity: 14),
+            value: [isOpen, dragState.isDragging])
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .gesture(swipeGesture)
     }
 
     var drawerOffset: CGFloat {
         let rawOffset = (isOpen ? 0 : -drawerWidth) + dragState.delta
-        return max(-drawerWidth, min(rawOffset, 0))
+        return rubberBandOffset(for: rawOffset, minOffset: -drawerWidth, maxOffset: 0)
     }
 
     var contentOffset: CGFloat {
         let rawOffset = (isOpen ? drawerWidth : 0) + dragState.delta
-        return max(0, min(rawOffset, drawerWidth))
+        return rubberBandOffset(for: rawOffset, minOffset: 0, maxOffset: drawerWidth)
+    }
+
+    func clippedOffset(for rawOffset: CGFloat, minOffset: CGFloat, maxOffset: CGFloat) -> CGFloat {
+        max(minOffset, min(rawOffset, maxOffset))
+    }
+
+    func rubberBandOffset(for rawOffset: CGFloat, minOffset: CGFloat, maxOffset: CGFloat) -> CGFloat {
+        if rawOffset < minOffset {
+            return softClip(rawOffset: rawOffset, threshold: minOffset)
+        } else if rawOffset > maxOffset {
+            return softClip(rawOffset: rawOffset, threshold: maxOffset)
+        } else {
+            return rawOffset
+        }
+    }
+
+    func softClip(rawOffset: CGFloat, threshold: CGFloat) -> CGFloat {
+        let stiffness: CGFloat = 5
+        let overshoot = (rawOffset - threshold)
+        let overshootFraction = overshoot / drawerWidth
+        let factor = 1 / (1 + abs(overshootFraction) * stiffness)
+        return threshold + overshoot * factor
     }
 
     var swipeGesture: some Gesture {
