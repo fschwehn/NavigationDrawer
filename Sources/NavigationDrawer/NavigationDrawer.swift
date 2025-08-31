@@ -109,12 +109,23 @@ private struct DemoContent: View {
     )
 }
 
-#Preview("landscape open", traits: .landscapeLeft) {
+#Preview("relative width") {
+    @Previewable @State var isDrawerOpen = false
+
+    NavigationDrawer(
+        isOpen: $isDrawerOpen,
+        drawerWidth: .relative(0.8),
+        drawer: { DemoDrawer() },
+        content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
+    )
+}
+
+#Preview("inset width") {
     @Previewable @State var isDrawerOpen = true
 
     NavigationDrawer(
         isOpen: $isDrawerOpen,
-        drawerWidth: .fixed(320),
+        drawerWidth: .inset(80),
         drawer: { DemoDrawer() },
         content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
     )
