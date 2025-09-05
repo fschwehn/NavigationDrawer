@@ -2,10 +2,14 @@
 
 import SwiftUI
 
-struct NavigationDrawerContent<Content: View, Drawer: View>: View {
+struct InnerNavigationDrawer<
+    Content: View,
+    Drawer: View
+>: View {
     @Binding var isOpen: Bool
 
     var drawerWidth: CGFloat
+    var geometry: GeometryProxy
     var drawer: () -> Drawer
     var content: () -> Content
 
@@ -21,27 +25,60 @@ struct NavigationDrawerContent<Content: View, Drawer: View>: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
+            NavigationStack {
+                content()
+            }
+            .removeBackground()
+            .offset(x: contentOffset)
+            .frame(width: geometry.size.width)
+
             drawer()
-                .frame(width: drawerWidth, alignment: .leading)
+                .frame(maxHeight: .infinity)
+                .frame(width: drawerWidth)
                 .offset(x: drawerOffset)
-            content()
-                .offset(x: contentOffset)
         }
         .animation(
             .interpolatingSpring(duration: 0.36, bounce: 0.15, initialVelocity: 14),
-            value: [isOpen, dragState.isDragging])
+            value: [isOpen, dragState.isDragging]
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .gesture(swipeGesture)
     }
 
     var drawerOffset: CGFloat {
-        let rawOffset = (isOpen ? 0 : -drawerWidth) + dragState.delta
-        return rubberBandOffset(for: rawOffset, minOffset: -drawerWidth, maxOffset: 0)
+        let minOffset = -drawerWidth - geometry.safeAreaInsets.leading
+        let rawOffset: CGFloat
+
+        if isOpen {
+            rawOffset = dragState.delta
+        } else {
+            rawOffset = minOffset + dragState.delta
+        }
+
+        return rubberBandOffset(for: rawOffset, minOffset: minOffset, maxOffset: 0)
     }
 
     var contentOffset: CGFloat {
-        let rawOffset = (isOpen ? drawerWidth : 0) + dragState.delta
+        let rawOffset: CGFloat
+
+        if isOpen {
+            if dragState.delta > 0 {
+                rawOffset = drawerWidth + dragState.delta
+            } else {
+                rawOffset = drawerWidth + dragState.delta
+            }
+        } else {
+            if dragState.delta > 0 {
+                rawOffset = max(0, dragState.delta - geometry.safeAreaInsets.leading)
+            } else {
+                rawOffset = dragState.delta
+            }
+        }
         return rubberBandOffset(for: rawOffset, minOffset: 0, maxOffset: drawerWidth)
+    }
+
+    var leadingContentBackgroundPadding: CGFloat {
+        min(0, dragState.delta - geometry.safeAreaInsets.leading)
     }
 
     func clippedOffset(for rawOffset: CGFloat, minOffset: CGFloat, maxOffset: CGFloat) -> CGFloat {
@@ -59,7 +96,7 @@ struct NavigationDrawerContent<Content: View, Drawer: View>: View {
     }
 
     func softClip(rawOffset: CGFloat, threshold: CGFloat) -> CGFloat {
-        let stiffness: CGFloat = 5
+        let stiffness: CGFloat = 9
         let overshoot = (rawOffset - threshold)
         let overshootFraction = overshoot / drawerWidth
         let factor = 1 / (1 + abs(overshootFraction) * stiffness)
@@ -79,12 +116,12 @@ struct NavigationDrawerContent<Content: View, Drawer: View>: View {
                     dragState.delta.negate()
                 }
             }
-            .onEnded { value in
+            .onEnded { _ in
                 defer { dragState = .init() }
 
                 guard dragState.isDragging else { return }
 
-                let progress = max(-1, min(1, (dragState.delta / drawerWidth)))
+                let progress = max(-1, min(1, dragState.delta / drawerWidth))
 
                 // TODO: parameterize open / close threshold(s)
                 if isOpen {

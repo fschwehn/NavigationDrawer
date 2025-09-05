@@ -2,7 +2,10 @@
 
 import SwiftUI
 
-public struct NavigationDrawer<Content: View, Drawer: View>: View {
+public struct NavigationDrawer<
+    Content: View,
+    Drawer: View,
+>: View {
     @Binding private var isOpen: Bool
 
     private let drawerWidth: DrawerWidth
@@ -23,9 +26,10 @@ public struct NavigationDrawer<Content: View, Drawer: View>: View {
 
     public var body: some View {
         GeometryReader { geometry in
-            NavigationDrawerContent(
+            InnerNavigationDrawer(
                 isOpen: $isOpen,
                 drawerWidth: drawerWidth.value(for: geometry),
+                geometry: geometry,
                 drawer: drawer,
                 content: content
             )
@@ -38,14 +42,7 @@ private struct DemoDrawer: View {
         Text("Drawer")
             .font(.title)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(
-                LinearGradient(
-                    colors: [.gray, .red],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .opacity(0.75)
-            )
+            .background(.tertiary)
     }
 }
 
@@ -53,20 +50,10 @@ private struct DemoContent: View {
     @Binding var isDrawerOpen: Bool
 
     var body: some View {
-        NavigationStack {
-            VStack {
-                Text("Content")
-                    .font(.title)
-            }
+        Text("Content")
+            .font(.title)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(
-                LinearGradient(
-                    colors: [.teal, .gray,],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .opacity(0.75)
-            )
+            .background(.secondary)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -74,14 +61,13 @@ private struct DemoContent: View {
                     } label: {
                         Image(systemName: "line.3.horizontal")
                     }
+                    .tint(.orange)
                 }
             }
-        }
     }
 }
 
-
-#Preview("auto") {
+ #Preview("auto") {
     @Previewable @State var isDrawerOpen = false
 
     NavigationDrawer(
@@ -96,10 +82,10 @@ private struct DemoContent: View {
             isDrawerOpen.toggle()
         }
     }
-}
+ }
 
-#Preview("portait open", traits: .portrait) {
-    @Previewable @State var isDrawerOpen = true
+ #Preview("manual", traits: .portrait) {
+    @Previewable @State var isDrawerOpen = false
 
     NavigationDrawer(
         isOpen: $isDrawerOpen,
@@ -107,26 +93,4 @@ private struct DemoContent: View {
         drawer: { DemoDrawer() },
         content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
     )
-}
-
-#Preview("relative width") {
-    @Previewable @State var isDrawerOpen = false
-
-    NavigationDrawer(
-        isOpen: $isDrawerOpen,
-        drawerWidth: .relative(0.8),
-        drawer: { DemoDrawer() },
-        content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
-    )
-}
-
-#Preview("inset width") {
-    @Previewable @State var isDrawerOpen = true
-
-    NavigationDrawer(
-        isOpen: $isDrawerOpen,
-        drawerWidth: .inset(80),
-        drawer: { DemoDrawer() },
-        content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
-    )
-}
+ }
