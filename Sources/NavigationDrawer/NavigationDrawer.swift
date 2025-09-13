@@ -2,10 +2,7 @@
 
 import SwiftUI
 
-public struct NavigationDrawer<
-    Content: View,
-    Drawer: View,
->: View {
+public struct NavigationDrawer<Content: View, Drawer: View>: View {
     @Binding private var isOpen: Bool
 
     private let drawerWidth: DrawerWidth
@@ -67,7 +64,7 @@ private struct DemoContent: View {
     }
 }
 
- #Preview("auto") {
+#Preview("auto") {
     @Previewable @State var isDrawerOpen = false
 
     NavigationDrawer(
@@ -82,9 +79,9 @@ private struct DemoContent: View {
             isDrawerOpen.toggle()
         }
     }
- }
+}
 
- #Preview("manual", traits: .portrait) {
+#Preview("manual", traits: .portrait) {
     @Previewable @State var isDrawerOpen = false
 
     NavigationDrawer(
@@ -93,4 +90,4 @@ private struct DemoContent: View {
         drawer: { DemoDrawer() },
         content: { DemoContent(isDrawerOpen: $isDrawerOpen) }
     )
- }
+}

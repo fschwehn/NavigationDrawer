@@ -2,10 +2,7 @@
 
 import SwiftUI
 
-struct InnerNavigationDrawer<
-    Content: View,
-    Drawer: View
->: View {
+struct InnerNavigationDrawer<Content: View, Drawer: View>: View {
     @Binding var isOpen: Bool
 
     var drawerWidth: CGFloat
@@ -31,7 +28,7 @@ struct InnerNavigationDrawer<
             .removeBackground()
             .offset(x: contentOffset)
             .frame(width: geometry.size.width)
-
+            .highPriorityGesture(tapToCloseGesture, isEnabled: isOpen)
             drawer()
                 .frame(maxHeight: .infinity)
                 .frame(width: drawerWidth)
@@ -42,7 +39,7 @@ struct InnerNavigationDrawer<
             value: [isOpen, dragState.isDragging]
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .gesture(swipeGesture)
+        .gesture(dragGesture)
     }
 
     var drawerOffset: CGFloat {
@@ -74,6 +71,7 @@ struct InnerNavigationDrawer<
                 rawOffset = dragState.delta
             }
         }
+
         return rubberBandOffset(for: rawOffset, minOffset: 0, maxOffset: drawerWidth)
     }
 
@@ -103,7 +101,7 @@ struct InnerNavigationDrawer<
         return threshold + overshoot * factor
     }
 
-    var swipeGesture: some Gesture {
+    var dragGesture: some Gesture {
         DragGesture(minimumDistance: 8)
             .onChanged { value in
                 lockSwipeGestureAxis(value: value)
@@ -123,12 +121,18 @@ struct InnerNavigationDrawer<
 
                 let progress = max(-1, min(1, dragState.delta / drawerWidth))
 
-                // TODO: parameterize open / close threshold(s)
                 if isOpen {
                     isOpen = progress > -0.5
                 } else {
                     isOpen = progress > 0.5
                 }
+            }
+    }
+
+    var tapToCloseGesture: some Gesture {
+        TapGesture()
+            .onEnded {
+                isOpen = false
             }
     }
 
