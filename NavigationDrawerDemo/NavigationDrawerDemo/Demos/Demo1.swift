@@ -1,9 +1,9 @@
 // FILE_HEADER
 
-import SwiftUI
 import NavigationDrawer
+import SwiftUI
 
-struct ContentView: View {
+struct Demo1: View {
     @State private var isDrawerOpen: Bool = false
 
     let drawerBackground = LinearGradient(
@@ -23,7 +23,7 @@ struct ContentView: View {
             isOpen: $isDrawerOpen,
             drawerWidth: .inset(60)
         ) {
-            Text("drawer")
+            DemoPicker()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background {
                     RoundedRectangle(cornerRadius: 63)
@@ -32,9 +32,11 @@ struct ContentView: View {
                         .padding(.leading, -24)
                         .shadow(radius: 20)
                 }
+                .tint(.pink)
         } content: {
             Text("content")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .navigationTitle("Content")
                 .toolbar {
                     ToolbarItem(placement: .navigation) {
                         Button {
@@ -51,5 +53,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    Demo1()
 }
